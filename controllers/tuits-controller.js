@@ -1,38 +1,37 @@
-import posts from "./tuits.js";
-let tuits = posts;
+import * as tuitsDao from "../daos/tuits-dao.js";
 
-const createTuit = (req, res) => {
+const createTuit = async (req, res) => {
     const newTuit = req.body;
-    newTuit._id = (new Date()).getTime() + '';
-    newTuit.likes = 0;
-    newTuit.liked = false;
-    newTuit.postedBy = {"username": "React Master"};
-    newTuit.stats = {
-        "comments": 123,
-        "retuits": 234,
-        "likes": 345,
-        "dislikes": 100
-    }
-    newTuit.handle = "ReactMaster"
+    newTuit.postedBy = {username: "ReactMaster"};
+    newTuit.stats = {likes: 10, dislikes: 5, retuits: 8, comments: 4}
+    newTuit.handle = "reactmaster";
     newTuit.avatarImg = "../../../images/react-blue.png"
-    tuits.push(newTuit);
-    res.json(newTuit);
+    newTuit.disliked = false;
+    newTuit.liked = false;
+    console.log("New tuit:", newTuit);
+    const insertedTuit = await tuitsDao.createTuit(newTuit);
+    res.json(insertedTuit);
 }
 
-const findAllTuits = (req, res) => res.json(tuits);
-const updateTuit = (req, res) => {
-
+const findAllTuits = async (req, res) => {
+    const tuits = await tuitsDao.findAllTuits();
+    res.json(tuits);
+}
+const updateTuit = async (req, res) => {
     const tuitdIdToUpdate = req.params.tid;
     const updatedTuit = req.body;
-    // console.log("Updated tuit:", updatedTuit);
-    tuits = tuits.map(t => t._id === tuitdIdToUpdate ? updatedTuit : t);
-    res.sendStatus(200);
+    console.log("Updated tuit:", updatedTuit);
+    const update = await tuitsDao.updateTuit(tuitdIdToUpdate, updatedTuit);
+    const status = update ? 200 : 500;
+    res.sendStatus(status);
 }
 
-const deleteTuit = (req, res) => {
-    const tuitdIdToDelete = req.params.tid;
-    tuits = tuits.filter(t => t._id !== tuitdIdToDelete);
-    res.sendStatus(200);
+const deleteTuit = async (req, res) => {
+    const tuitIdToDelete = req.params.tid;
+    console.log("Tuit to dlt:", tuitIdToDelete);
+    const deleted = await tuitsDao.deleteTuit(tuitIdToDelete);
+    const status = deleted ? 200 : 500;
+    res.sendStatus(status);
 }
 
 
